@@ -1,0 +1,47 @@
+name: Auto Update Repo
+
+on:
+  schedule:
+    # Runs at these UTC times — 5 scheduled triggers, script randomly skips some
+    # to achieve 2–5 commits per day organically
+    - cron: '0 2 * * *'   # 2:00 AM UTC
+    - cron: '0 7 * * *'   # 7:00 AM UTC
+    - cron: '0 12 * * *'  # 12:00 PM UTC
+    - cron: '0 17 * * *'  # 5:00 PM UTC
+    - cron: '0 22 * * *'  # 10:00 PM UTC
+  workflow_dispatch:       # Allow manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Maybe commit (random 2–5 times/day logic)
+        run: |
+          # Randomly skip ~20% of triggers so we average 2–5 commits/day
+          ROLL=$((RANDOM % 5))
+          if [ "$ROLL" -eq 0 ]; then
+            echo "Skipping this run (random skip)."
+            exit 0
+          fi
+
+          # Update the activity log
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "$TIMESTAMP — automated update" >> activity.log
+
+          # Keep log from growing unbounded (keep last 500 lines)
+          tail -500 activity.log > activity.log.tmp && mv activity.log.tmp activity.log
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add activity.log
+          git commit -m "chore: automated update [$TIMESTAMP]"
+          git push
