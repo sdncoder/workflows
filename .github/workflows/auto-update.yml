@@ -39,8 +39,8 @@ jobs:
           # Keep log from growing unbounded (keep last 500 lines)
           tail -500 activity.log > activity.log.tmp && mv activity.log.tmp activity.log
 
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "Cliff"
+          git config user.email "16766408+sdncoder@users.noreply.github.com"
 
           git add activity.log
           git commit -m "chore: automated update [$TIMESTAMP]"
