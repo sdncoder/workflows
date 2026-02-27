@@ -25,7 +25,33 @@ jobs:
 
       - name: Maybe commit (random 2–5 times/day logic)
         run: |
-          # Randomly skip ~20% of triggers so we average 2–5 commits/day
+          TODAY=$(date -u '+%Y-%m-%d')
+          SKIP_FILE=".skip-day"
+
+          # If skip file exists for today, bail out
+          if [ -f "$SKIP_FILE" ] && grep -q "$TODAY" "$SKIP_FILE"; then
+            echo "Skipping today ($TODAY) due to day-skip flag."
+            exit 0
+          fi
+
+          # On first run of the day, decide if we skip the whole day (~30% chance)
+          if ! [ -f "$SKIP_FILE" ] || ! grep -q "$TODAY" "$SKIP_FILE"; then
+            DAY_ROLL=$((RANDOM % 10))
+            if [ "$DAY_ROLL" -lt 3 ]; then
+              echo "$TODAY" > "$SKIP_FILE"
+
+              git config user.name  "Cliff"
+              git config user.email "16766408+sdncoder@users.noreply.github.com"
+
+              git add "$SKIP_FILE"
+              git commit -m "chore: skip day [$TODAY]"
+              git push
+              echo "Skipping today ($TODAY)."
+              exit 0
+            fi
+          fi
+
+          # Randomly skip ~20% of individual triggers
           ROLL=$((RANDOM % 5))
           if [ "$ROLL" -eq 0 ]; then
             echo "Skipping this run (random skip)."
