@@ -37,7 +37,7 @@ jobs:
           # On first run of the day, decide if we skip the whole day (~30% chance)
           if ! [ -f "$SKIP_FILE" ] || ! grep -q "$TODAY" "$SKIP_FILE"; then
             DAY_ROLL=$((RANDOM % 10))
-            if [ "$DAY_ROLL" -lt 3 ]; then
+            if [ "$DAY_ROLL" -lt 5 ]; then
               echo "$TODAY" > "$SKIP_FILE"
 
               git config user.name  "Cliff"
