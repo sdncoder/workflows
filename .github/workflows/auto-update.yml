@@ -2,13 +2,11 @@ name: Auto Update Repo
 
 on:
   schedule:
-    # Runs at these UTC times — 5 scheduled triggers, script randomly skips some
+    # Runs at these UTC times — 3 scheduled triggers, script randomly skips some
     # to achieve 2–5 commits per day organically
     - cron: '0 2 * * *'   # 2:00 AM UTC
     - cron: '0 7 * * *'   # 7:00 AM UTC
     - cron: '0 12 * * *'  # 12:00 PM UTC
-    - cron: '0 17 * * *'  # 5:00 PM UTC
-    - cron: '0 22 * * *'  # 10:00 PM UTC
   workflow_dispatch:       # Allow manual trigger
 
 jobs:
