@@ -2,12 +2,13 @@ name: Auto Update Repo
 
 on:
   schedule:
-    # Runs at these UTC times — 3 scheduled triggers, script randomly skips some
-    # to achieve 2–5 commits per day organically
-    - cron: '0 2 * * *'   # 2:00 AM UTC
-    - cron: '0 7 * * *'   # 7:00 AM UTC
-    - cron: '0 12 * * *'  # 12:00 PM UTC
-  workflow_dispatch:       # Allow manual trigger
+    - cron: '0 0 * * *'   # 00:00 UTC
+    - cron: '0 4 * * *'   # 04:00 UTC
+    - cron: '0 8 * * *'   # 08:00 UTC
+    - cron: '0 12 * * *'  # 12:00 UTC
+    - cron: '0 16 * * *'  # 16:00 UTC
+    - cron: '0 20 * * *'  # 20:00 UTC
+  workflow_dispatch:
 
 jobs:
   update:
@@ -21,51 +22,55 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Maybe commit (random 2–5 times/day logic)
+      - name: Record latency and update log
         run: |
           TODAY=$(date -u '+%Y-%m-%d')
-          SKIP_FILE=".skip-day"
+          COUNT_FILE=".run-count"
 
-          # If skip file exists for today, bail out
-          if [ -f "$SKIP_FILE" ] && grep -q "$TODAY" "$SKIP_FILE"; then
-            echo "Skipping today ($TODAY) due to day-skip flag."
-            exit 0
-          fi
-
-          # On first run of the day, decide if we skip the whole day (~30% chance)
-          if ! [ -f "$SKIP_FILE" ] || ! grep -q "$TODAY" "$SKIP_FILE"; then
-            DAY_ROLL=$((RANDOM % 10))
-            if [ "$DAY_ROLL" -lt 5 ]; then
-              echo "$TODAY" > "$SKIP_FILE"
-
-              git config user.name  "Cliff"
-              git config user.email "16766408+sdncoder@users.noreply.github.com"
-
-              git add "$SKIP_FILE"
-              git commit -m "chore: skip day [$TODAY]"
-              git push
-              echo "Skipping today ($TODAY)."
-              exit 0
+          # Read today's run count and target from state file
+          RUNS_TODAY=0
+          TARGET=0
+          if [ -f "$COUNT_FILE" ]; then
+            stored_date=$(cut -d: -f1 "$COUNT_FILE")
+            stored_count=$(cut -d: -f2 "$COUNT_FILE")
+            stored_target=$(cut -d: -f3 "$COUNT_FILE")
+            if [ "$stored_date" = "$TODAY" ]; then
+              RUNS_TODAY=$stored_count
+              TARGET=$stored_target
             fi
           fi
 
-          # Randomly skip ~20% of individual triggers
-          ROLL=$((RANDOM % 5))
-          if [ "$ROLL" -eq 0 ]; then
-            echo "Skipping this run (random skip)."
+          # First run of the day: pick a random target between 2 and 6
+          if [ "$RUNS_TODAY" -eq 0 ]; then
+            TARGET=$((RANDOM % 5 + 2))
+            echo "New day — target: $TARGET runs."
+          fi
+
+          # Already hit today's target — bail out
+          if [ "$RUNS_TODAY" -ge "$TARGET" ]; then
+            echo "Already ran $RUNS_TODAY/$TARGET times today. Skipping."
             exit 0
           fi
 
-          # Update the activity log
-          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          echo "$TIMESTAMP — automated update" >> activity.log
+          # Ping both hosts (5 packets each, 3s timeout) and extract avg RTT
+          LATENCY_8888=$(ping -c 5 -W 3 8.8.8.8 2>/dev/null | awk -F'/' '/rtt/{printf "%.2f", $5}')
+          LATENCY_1111=$(ping -c 5 -W 3 1.1.1.1 2>/dev/null | awk -F'/' '/rtt/{printf "%.2f", $5}')
+          [ -z "$LATENCY_8888" ] && LATENCY_8888="timeout"
+          [ -z "$LATENCY_1111" ] && LATENCY_1111="timeout"
 
-          # Keep log from growing unbounded (keep last 500 lines)
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "$TIMESTAMP | 8.8.8.8=${LATENCY_8888}ms | 1.1.1.1=${LATENCY_1111}ms" >> activity.log
+
+          # Keep log from growing unbounded
           tail -500 activity.log > activity.log.tmp && mv activity.log.tmp activity.log
+
+          # Persist updated run count
+          RUNS_TODAY=$((RUNS_TODAY + 1))
+          echo "$TODAY:$RUNS_TODAY:$TARGET" > "$COUNT_FILE"
 
           git config user.name  "Cliff"
           git config user.email "16766408+sdncoder@users.noreply.github.com"
 
-          git add activity.log
-          git commit -m "chore: automated update [$TIMESTAMP]"
+          git add activity.log "$COUNT_FILE"
+          git commit -m "chore: latency update [$TIMESTAMP]"
           git push
