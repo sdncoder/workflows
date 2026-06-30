@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG="/Users/cliff/Desktop/Claude_Work/workflows/ping.log"
+LOG="$HOME/Library/Logs/ping.log"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
 WEST=$(ping -c 10 -q 8.8.8.8 2>/dev/null | tail -1 | awk -F'/' '{print $5}')
