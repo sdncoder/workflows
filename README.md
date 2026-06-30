@@ -11,11 +11,23 @@ A lightweight network latency monitor that runs locally on macOS and logs ping r
 
 ## Files
 
+### Repo (reference copies)
+
 | File | Description |
 |------|-------------|
-| `ping_check.sh` | Pings both IPs, extracts average latency, appends a timestamped entry to the log |
-| `git_sync.sh` | Copies the log into the repo, commits any new entries, and pushes to GitHub |
-| `ping.log` | Running log of latency readings (synced from `~/Library/Logs/ping.log`) |
+| `ping_check.sh` | Source copy of the ping script |
+| `git_sync.sh` | Source copy of the sync script |
+| `ping.log` | Latency log synced from the Mac and committed daily |
+
+### On the Mac (active locations)
+
+| Path | Description |
+|------|-------------|
+| `~/bin/ping_check.sh` | Deployed ping script — run by launchd every 4 hours |
+| `~/bin/git_sync.sh` | Deployed sync script — run by launchd every 24 hours |
+| `~/Library/Logs/ping.log` | Live log file written by `ping_check.sh` |
+| `~/Library/LaunchAgents/com.cliff.pingcheck.plist` | launchd agent for ping checks |
+| `~/Library/LaunchAgents/com.cliff.gitsync.plist` | launchd agent for GitHub sync |
 
 ## Log format
 
