@@ -6,10 +6,8 @@ DEST_LOG="$REPO/ping.log"
 
 cp "$SRC_LOG" "$DEST_LOG" 2>/dev/null || true
 
-cd "$REPO" || exit 1
+git -C "$REPO" add ping.log
+git -C "$REPO" diff --cached --quiet && exit 0
 
-git add ping.log
-git diff --cached --quiet && exit 0
-
-git commit -m "ping log update $(date '+%Y-%m-%d')"
-git push origin main
+git -C "$REPO" commit -m "ping log update $(date '+%Y-%m-%d')"
+git -C "$REPO" push origin main
