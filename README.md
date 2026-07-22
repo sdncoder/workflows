@@ -2,6 +2,12 @@
 
 A lightweight network latency monitor that runs locally on macOS and logs ping results to GitHub daily. Uses **launchd** instead of cron so jobs execute when the Mac wakes from sleep rather than being silently skipped.
 
+## Latency Chart
+
+![Ping Latency](ping_chart.png)
+
+*Updated automatically on each push to `ping.log`.*
+
 ## What it does
 
 - Pings `8.8.8.8` (Google DNS) and `1.1.1.1` (Cloudflare DNS) every 4 hours while the Mac is awake
