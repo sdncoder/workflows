@@ -10,4 +10,5 @@ git -C "$REPO" add ping.log
 git -C "$REPO" diff --cached --quiet && exit 0
 
 git -C "$REPO" commit -m "ping log update $(date '+%Y-%m-%d')"
+git -C "$REPO" pull --rebase origin main
 git -C "$REPO" push origin main
