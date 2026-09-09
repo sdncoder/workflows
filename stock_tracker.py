@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime
 import csv
 import os
+from datetime import timezone
 
 TICKERS = ["BKSY", "IONQ", "QNT", "GDYN"]
 LOG_FILE = "stocks.csv"
@@ -13,7 +14,7 @@ COLORS = {"BKSY": "#4C9BE8", "IONQ": "#F4A261", "QNT": "#2EC4B6", "GDYN": "#E848
 
 
 def get_prices():
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     results = {}
     for ticker in TICKERS:
         try:
