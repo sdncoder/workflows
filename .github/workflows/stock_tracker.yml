@@ -1,0 +1,33 @@
+name: Stock Price Tracker
+
+on:
+  schedule:
+    - cron: '0 19 * * 1-5'  # 3PM ET (EDT) weekdays
+  workflow_dispatch:
+
+jobs:
+  track-stocks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install yfinance matplotlib pandas
+
+      - name: Fetch prices and update chart
+        run: python stock_tracker.py
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add stocks.csv stock_chart.png
+          git diff --staged --quiet || git commit -m "stock update $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
