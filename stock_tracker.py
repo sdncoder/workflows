@@ -48,35 +48,25 @@ def build_chart():
     df = pd.read_csv(LOG_FILE)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(13, 8))
-    fig.suptitle("Quantum and AI Stocks", fontsize=15, fontweight="bold", y=0.98)
+    fig, ax = plt.subplots(1, 1, figsize=(13, 5))
+    fig.suptitle("Quantum and AI Stocks -- Daily Change (%)", fontsize=15, fontweight="bold", y=0.98)
 
     for ticker in TICKERS:
         tdata = df[df["ticker"] == ticker].sort_values("timestamp")
         if tdata.empty:
             continue
         color = COLORS.get(ticker, "gray")
-        ax1.plot(tdata["timestamp"], tdata["price"], marker="o", markersize=4,
-                 linewidth=1.5, label=ticker, color=color)
-        ax2.plot(tdata["timestamp"], tdata["pct_change"], marker="o", markersize=4,
-                 linewidth=1.5, label=ticker, color=color)
+        ax.plot(tdata["timestamp"], tdata["pct_change"], marker="o", markersize=4,
+                linewidth=1.5, label=ticker, color=color)
 
-    ax1.set_ylabel("Price (USD)")
-    ax1.set_title("Price", fontsize=11)
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
-    ax1.set_facecolor("#f8f9fa")
+    ax.set_ylabel("Change (%)")
+    ax.axhline(0, color="gray", linewidth=0.8, linestyle="--")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_facecolor("#f8f9fa")
 
-    ax2.set_ylabel("Change (%)")
-    ax2.set_title("Daily Change (%)", fontsize=11)
-    ax2.axhline(0, color="gray", linewidth=0.8, linestyle="--")
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
-    ax2.set_facecolor("#f8f9fa")
-
-    for ax in [ax1, ax2]:
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
-        ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
+    ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
 
     fig.autofmt_xdate()
     fig.patch.set_facecolor("#ffffff")
