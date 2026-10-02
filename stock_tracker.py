@@ -7,10 +7,10 @@ import csv
 import os
 from datetime import timezone
 
-TICKERS = ["BKSY", "IONQ", "QNT", "GDYN"]
+TICKERS = ["BKSY", "IONQ", "QNT", "GDYN", "FN"]
 LOG_FILE = "stocks.csv"
 CHART_FILE = "stock_chart.png"
-COLORS = {"BKSY": "#4C9BE8", "IONQ": "#F4A261", "QNT": "#2EC4B6", "GDYN": "#E84855"}
+COLORS = {"BKSY": "#4C9BE8", "IONQ": "#F4A261", "QNT": "#2EC4B6", "GDYN": "#E84855", "FN": "#8E44AD"}
 
 
 def get_prices():
